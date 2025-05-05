@@ -1,7 +1,7 @@
-### web-sdk
+## web-sdk
 
 
-## 📥 Clone the Repository
+## Clone the Repository
 
 ```bash
 git clone https://github.com/MubbashirAhmed123/web-sdk.git
