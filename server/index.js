@@ -1,43 +1,110 @@
 import Fastify from "fastify";
 import cors from '@fastify/cors';
+import { UAParser } from "ua-parser-js";
+import os from 'os';
+
+import Redis from "ioredis";
 
 const fastify = Fastify({ logger: true });
+
+const redis =new Redis()
+console.log('connected to redis')
+
 
 fastify.register(cors, {
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type']
+})
 
 
-});
 
-fastify.addHook('onSend', (request, reply, payload, done) => {
-    console.log('Response headers:', reply.getHeaders());
-    done();
-});
+const getIpDetails = async () => {
+    
 
-fastify.get('/', (req, res) => {
+    const myIp = await fetch('https://api.ipify.org?format=json');
+    const {ip}= await myIp.json();
+    console.log(ip)
 
-    res.send('in house web sdk.');
-});
+    const res = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&asn=1`);
+    let ipD=await res.json()
+    console.log('ipD',ipD)
+    // return ipD
+    if(ipD[ip].type=="Business") return {...ipD,vpn:false,ipAddress:ip}
+    return {...ipD,vpn:true,ipAddress:ip}
+}
 
-fastify.post('/details', (req, res) => {
-    let data = req.body
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+fastify.get('/',(_,res)=>{
+    res.send('hello mubbashir')
+})
 
-    console.log('Request body:', req.body, {ip});
-    try {
-        res.send(data);
-    } catch (error) {
-        console.error('Error processing data:', error);
-        res.status(500).send({ error: 'An error occurred while processing your request.' });
+fastify.get('/ip', async (req, res) => {
+     
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = forwarded ? forwarded.split(',')[0] : req.socket.remoteAddress;
+        console.log('User IP:', ip);
+        res.status(200).send({ ip });
+      
+})
+
+  
+
+fastify.post('/details', async (req, res) => {
+    const { browserInfo, deviceInfo, madeDetails } = req.body;
+    const sessionId=Date.now().toString()
+
+    
+    console.log('req.body',req.body)
+    const ua = UAParser(browserInfo.userAgent);
+
+    let ipDetails = await getIpDetails();
+    console.log('ip',ipDetails)
+
+    deviceInfo.vendor = ua.device.vendor || null;
+    deviceInfo.model = ua.device.model || null;
+    deviceInfo.osName = ua.os.name || null;
+    deviceInfo.osVersion = ua.os.version || null;
+
+    browserInfo.browserName = ua.browser.name || null;
+    browserInfo.browserVersion = ua.browser.version || null;
+
+    Object.assign(madeDetails, {
+        browser: ua.browser.name || null,
+        manufacturer: ua.device.vendor || null,
+        os: ua.os.name || null,
+        osVersion: ua.os.version || null,
+        cpuArchitecture: os.arch(),
+        userAgent: ua.ua,
+    });
+
+    const webSdkData = {
+        ...req.body,
+        ipDetails,
+        sessionId
     }
-});
+
+    await redis.set(sessionId,JSON.stringify(webSdkData),'EX',600)
+
+    try {
+        res.send({sessionId});
+    } catch (err) {
+        console.error('Error sending response:', err);
+        res.status(500).send({ error: 'Internal server error' });
+    }
+})
+
+
+fastify.get('/get-web-sdk-data/:sessionId',async(req,res)=>{
+    const { sessionId } = req.params;
+    const data = await redis.get(sessionId);
+    if (!data) return res.status(404).send({ error: "Session not found" });
+  
+    res.send(JSON.parse(data));
+})
 
 fastify.listen({ port: 5000 }, (err) => {
     if (err) {
         console.error('Server error:', err);
         process.exit(1);
     }
-    console.log('Server running on port 5000');
-});
+    console.log('Server running on http://localhost:5000');
+})
