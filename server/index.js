@@ -2,12 +2,18 @@ import Fastify from "fastify";
 import cors from '@fastify/cors';
 import { UAParser } from "ua-parser-js";
 import os from 'os';
-
+import path, { dirname } from "path";
 import Redis from "ioredis";
+import fastifyStatic from "@fastify/static";
+import { fileURLToPath } from "url";
 
 const fastify = Fastify({ logger: true });
 
-const redis =new Redis()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+console.log('__dirname',__dirname)
+
+const redis = new Redis()
 console.log('connected to redis')
 
 
@@ -17,47 +23,49 @@ fastify.register(cors, {
 })
 
 
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, 'public'),
+});
+
+
 
 const getIpDetails = async () => {
-    
 
     const myIp = await fetch('https://api.ipify.org?format=json');
-    const {ip}= await myIp.json();
+    const { ip } = await myIp.json();
     console.log(ip)
 
     const res = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&asn=1`);
-    let ipD=await res.json()
-    console.log('ipD',ipD)
+    let ipD = await res.json()
+    console.log('ipD', ipD)
     // return ipD
-    if(ipD[ip].type=="Business") return {...ipD,vpn:false,ipAddress:ip}
-    return {...ipD,vpn:true,ipAddress:ip}
+    if (ipD[ip].type == "Business") return { ...ipD, vpn: false, ipAddress: ip }
+    return { ...ipD, vpn: true, ipAddress: ip }
 }
 
-fastify.get('/',(_,res)=>{
-    res.send('hello mubbashir')
+fastify.get('/', (_, res) => {
+    res.sendFile('index.html')
 })
 
 fastify.get('/ip', async (req, res) => {
-     
-        const forwarded = req.headers['x-forwarded-for'];
-        const ip = forwarded ? forwarded.split(',')[0] : req.socket.remoteAddress;
-        console.log('User IP:', ip);
-        res.status(200).send({ ip });
-      
+
+    const ip = getUserIp(req)
+    console.log('User IP:', ip);
+    res.status(200).send({ ip });
+
 })
 
-  
 
 fastify.post('/details', async (req, res) => {
     const { browserInfo, deviceInfo, madeDetails } = req.body;
-    const sessionId=Date.now().toString()
+    const sessionId = Date.now().toString()
 
-    
-    console.log('req.body',req.body)
+
+    console.log('req.body', req.body)
     const ua = UAParser(browserInfo.userAgent);
 
     let ipDetails = await getIpDetails();
-    console.log('ip',ipDetails)
+    console.log('ip', ipDetails)
 
     deviceInfo.vendor = ua.device.vendor || null;
     deviceInfo.model = ua.device.model || null;
@@ -82,10 +90,10 @@ fastify.post('/details', async (req, res) => {
         sessionId
     }
 
-    await redis.set(sessionId,JSON.stringify(webSdkData),'EX',600)
+    await redis.set(sessionId, JSON.stringify(webSdkData), 'EX', 600)
 
     try {
-        res.send({sessionId});
+        res.send({ sessionId,webSdkData });
     } catch (err) {
         console.error('Error sending response:', err);
         res.status(500).send({ error: 'Internal server error' });
@@ -93,13 +101,20 @@ fastify.post('/details', async (req, res) => {
 })
 
 
-fastify.get('/get-web-sdk-data/:sessionId',async(req,res)=>{
+fastify.get('/get-web-sdk-data/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
     const data = await redis.get(sessionId);
     if (!data) return res.status(404).send({ error: "Session not found" });
-  
+
     res.send(JSON.parse(data));
 })
+
+
+const getUserIp = (req) => {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = forwarded ? forwarded.split(',')[0] : req.socket.remoteAddress;
+    return ip
+}
 
 fastify.listen({ port: 5000 }, (err) => {
     if (err) {
