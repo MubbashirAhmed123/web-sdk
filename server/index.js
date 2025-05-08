@@ -3,7 +3,6 @@ import cors from '@fastify/cors';
 import { UAParser } from "ua-parser-js";
 import os from 'os';
 import path, { dirname } from "path";
-import Redis from "ioredis";
 import fastifyStatic from "@fastify/static";
 import { fileURLToPath } from "url";
 
@@ -13,8 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 console.log('__dirname',__dirname)
 
-const redis = new Redis()
-console.log('connected to redis')
 
 
 fastify.register(cors, {
@@ -90,7 +87,6 @@ fastify.post('/details', async (req, res) => {
         sessionId
     }
 
-    await redis.set(sessionId, JSON.stringify(webSdkData), 'EX', 600)
 
     try {
         res.send({ sessionId,webSdkData });
@@ -101,13 +97,13 @@ fastify.post('/details', async (req, res) => {
 })
 
 
-fastify.get('/get-web-sdk-data/:sessionId', async (req, res) => {
-    const { sessionId } = req.params;
-    const data = await redis.get(sessionId);
-    if (!data) return res.status(404).send({ error: "Session not found" });
+// fastify.get('/get-web-sdk-data/:sessionId', async (req, res) => {
+//     const { sessionId } = req.params;
+//     const data = await redis.get(sessionId);
+//     if (!data) return res.status(404).send({ error: "Session not found" });
 
-    res.send(JSON.parse(data));
-})
+//     res.send(JSON.parse(data));
+// })
 
 
 const getUserIp = (req) => {
