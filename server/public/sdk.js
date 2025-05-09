@@ -1,5 +1,3 @@
-console.log('hello')
-
 import { getBrowserInfo } from "./browser.js";
 import { detectPlatform, getDeviceType, madeInfo } from "./device.js";
 import { getIpDetails } from "./ip.js";
@@ -10,14 +8,16 @@ const serverResponse = document.getElementById('serverResponse')
 const form = document.getElementById('form')
 
 let locationDetails = null;
-        try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-            });
-            locationDetails = await getLocationFromGeolocation(position.coords);
-        } catch (geoErr) {
-            console.log('location denied.');
-        }
+try {
+    const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+    });
+    locationDetails = await getLocationFromGeolocation(position.coords);
+} catch (geoErr) {
+    alert('location denied.')
+    console.log('location denied.');
+    return
+}
 
 
 export async function collectUserDetails() {
@@ -30,7 +30,7 @@ export async function collectUserDetails() {
 
         const platform = detectPlatform();
 
-        
+
 
 
         const payload = {
@@ -54,22 +54,16 @@ export async function collectUserDetails() {
             const result = await res.json();
             console.log('server response', result);
             serverResponse.innerHTML = `<p>Successfully fetch th data.... </br>${JSON.stringify(result.webSdkData)}</p>`
-            localStorage.setItem('sdk-data',JSON.stringify(result.webSdkData))
-        }else{
+            localStorage.setItem('sdk-data', JSON.stringify(result.webSdkData))
+        } else {
             serverResponse.innerHTML = `<p>Some error occured.</p>`
 
         }
-
-        // return payload;
     } catch (error) {
         console.error('error while getting data ', error);
         return null;
     }
 }
-
-
-
-console.log(form)
 
 form.onsubmit = (e) => {
     e.preventDefault()
