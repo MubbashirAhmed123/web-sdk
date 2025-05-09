@@ -15,7 +15,7 @@ export const getLocationFromGeolocation = async (coords) => {
         countryCode: data.countryCode || null,
       };
     } catch (err) {
-      console.log('getLocationFromGeolocation', err);
+      alert('Some error ocurred while getting location details.')
       return null;
     }
   };

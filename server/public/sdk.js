@@ -15,7 +15,6 @@ try {
     locationDetails = await getLocationFromGeolocation(position.coords);
 } catch (geoErr) {
     alert('location denied.')
-    console.log('location denied.');
 }
 
 
@@ -51,15 +50,14 @@ export async function collectUserDetails() {
 
         if (res.ok) {
             const result = await res.json();
-            console.log('server response', result);
-            serverResponse.innerHTML = `<p>Successfully fetch th data.... </br>${JSON.stringify(result.webSdkData)}</p>`
+            serverResponse.innerHTML = `<p>Successfully fetch the data.... </br>${JSON.stringify(result.webSdkData)}</p>`
             localStorage.setItem('sdk-data', JSON.stringify(result.webSdkData))
         } else {
             serverResponse.innerHTML = `<p>Some error occured.</p>`
 
         }
     } catch (error) {
-        console.error('error while getting data ', error);
+        alert('error while getting data ', error);
         return null;
     }
 }

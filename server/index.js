@@ -10,7 +10,6 @@ const fastify = Fastify({ logger: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-console.log('__dirname',__dirname)
 
 
 
@@ -33,11 +32,9 @@ const getIpDetails = async (req) => {
     // console.log(ip)
 
     const ip=getUserIp(req)
-    console.log(ip)
 
     const res = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&asn=1`);
     let ipD = await res.json()
-    console.log('ipD', ipD)
     // return ipD
     if (ipD[ip].type === "VPN") return { ...ipD, vpn: true, ipAddress: ip }
     return { ...ipD, vpn: false, ipAddress: ip }
@@ -50,7 +47,6 @@ fastify.get('/', (_, res) => {
 fastify.get('/ip', async (req, res) => {
 
     const ip = getUserIp(req)
-    console.log('User IP:', ip);
     res.status(200).send({ ip });
 
 })
@@ -61,11 +57,9 @@ fastify.post('/details', async (req, res) => {
     const sessionId = Date.now().toString()
 
 
-    console.log('req.body', req.body)
     const ua = UAParser(browserInfo.userAgent);
 
     let ipDetails = await getIpDetails(req);
-    console.log('ip', ipDetails)
 
     deviceInfo.vendor = ua.device.vendor || null;
     deviceInfo.model = ua.device.model || null;
@@ -94,7 +88,6 @@ fastify.post('/details', async (req, res) => {
     try {
         res.send({ sessionId,webSdkData });
     } catch (err) {
-        console.error('Error sending response:', err);
         res.status(500).send({ error: 'Internal server error' });
     }
 })
@@ -117,7 +110,6 @@ const getUserIp = (req) => {
 
 fastify.listen({ port: 5000 }, (err) => {
     if (err) {
-        console.error('Server error:', err);
         process.exit(1);
     }
     console.log('Server running on http://localhost:5000');
