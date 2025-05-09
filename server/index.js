@@ -26,10 +26,13 @@ fastify.register(fastifyStatic, {
 
 
 
-const getIpDetails = async () => {
+const getIpDetails = async (req) => {
 
-    const myIp = await fetch('https://api.ipify.org?format=json');
-    const { ip } = await myIp.json();
+    // const myIp = await fetch('https://api.ipify.org?format=json');
+    // const { ip } = await myIp.json();
+    // console.log(ip)
+
+    const ip=getUserIp(req)
     console.log(ip)
 
     const res = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&asn=1`);
@@ -61,7 +64,7 @@ fastify.post('/details', async (req, res) => {
     console.log('req.body', req.body)
     const ua = UAParser(browserInfo.userAgent);
 
-    let ipDetails = await getIpDetails();
+    let ipDetails = await getIpDetails(req);
     console.log('ip', ipDetails)
 
     deviceInfo.vendor = ua.device.vendor || null;
