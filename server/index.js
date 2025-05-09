@@ -39,8 +39,8 @@ const getIpDetails = async (req) => {
     let ipD = await res.json()
     console.log('ipD', ipD)
     // return ipD
-    if (ipD[ip].type == "Business") return { ...ipD, vpn: false, ipAddress: ip }
-    return { ...ipD, vpn: true, ipAddress: ip }
+    if (ipD[ip].type === "VPN") return { ...ipD, vpn: true, ipAddress: ip }
+    return { ...ipD, vpn: false, ipAddress: ip }
 }
 
 fastify.get('/', (_, res) => {
