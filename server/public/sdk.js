@@ -16,7 +16,6 @@ try {
 } catch (geoErr) {
     alert('location denied.')
     console.log('location denied.');
-    return
 }
 
 
