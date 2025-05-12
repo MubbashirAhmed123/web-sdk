@@ -31,6 +31,7 @@ export async function collectUserDetails() {
 
 
 
+
         const payload = {
             timestamp: new Date().toISOString(),
             platform,
@@ -39,6 +40,7 @@ export async function collectUserDetails() {
             // ipDetails
             locationDetails,
             madeDetails,
+            
         };
 
         const res = await fetch('https://web-sdk-eosin.vercel.app/details', {
@@ -62,16 +64,64 @@ export async function collectUserDetails() {
     }
 }
 
-form.onsubmit = (e) => {
-    e.preventDefault()
-    if (userid.value === "") {
-        alert('user id is required.')
-        return
-    }
+// form.onsubmit = (e) => {
+//     e.preventDefault()
+//     if (userid.value === "") {
+//         alert('user id is required.')
+//         return
+//     }
 
-    collectUserDetails()
+//     collectUserDetails()
 
-}
+// }
+
+
+// document.onloadstart=()=>{
+    // collectUserDetails()
+
+// }
+
+
+
+// async function detectVPNUsage() {
+//     const leakedIPs = new Set();
+//     let vppn=false
+  
+//     const rtc = new RTCPeerConnection({
+//       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+//     });
+//     rtc.createDataChannel("");
+  
+//     rtc.createOffer().then(offer => rtc.setLocalDescription(offer));
+  
+//     rtc.onicecandidate = async (event) => {
+//       if (event.candidate) {
+//         const ipRegex = /([0-9]{1,3}(?:\.[0-9]{1,3}){3})/;
+//         const ipMatch = event.candidate.candidate.match(ipRegex);
+//         if (ipMatch) {
+//           leakedIPs.add(ipMatch[1]);
+//         }
+//       } else {
+//         // All ICE candidates received
+//         const publicIP = await fetch("https://api.ipify.org?format=json")
+//           .then(res => res.json())
+//           .then(data => data.ip);
+  
+//         console.log("Public IP (via API):", publicIP);
+//         console.log("Leaked IPs (via WebRTC):", Array.from(leakedIPs));
+  
+//         const isVPN = !leakedIPs.has(publicIP);
+//         vppn=isVPN
+  
+//       }
+//     };
+//     return vppn
+    
+//   }
+
+    window.onload=collectUserDetails()
+
+
 
 
 
