@@ -6,6 +6,7 @@ import { getLocationFromGeolocation } from "./location.js";
 const userid = document.getElementById('userid')
 const serverResponse = document.getElementById('serverResponse')
 const form = document.getElementById('form')
+const loader=document.getElementById('loader')
 
 let locationDetails = null;
 try {
@@ -20,6 +21,8 @@ try {
 
 export async function collectUserDetails() {
     try {
+        loader.style.display='block'
+
         const deviceInfo = getDeviceType();
         const browserInfo = getBrowserInfo();
         const madeDetails = madeInfo();
@@ -50,9 +53,12 @@ export async function collectUserDetails() {
         });
 
 
+
         if (res.ok) {
             const result = await res.json();
-            serverResponse.innerHTML = `<p>Successfully fetch the data.... </br>${JSON.stringify(result.webSdkData)}</p>`
+            serverResponse.innerHTML = `<p id='data'>Successfully fetch the data.... </br>${JSON.stringify(result.webSdkData)}</p>`
+            loader.style.display='none'
+
             localStorage.setItem('sdk-data', JSON.stringify(result.webSdkData))
         } else {
             serverResponse.innerHTML = `<p>Some error occured.</p>`
