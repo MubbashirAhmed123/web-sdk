@@ -78,17 +78,17 @@ fastify.post('/details', async (req, res) => {
         userAgent: ua.ua,
     });
 
+    
 
 
     const webSdkData = {
         ...req.body,
-        url : `${req.protocol}://${req.hostname}${req.originalUrl}`,
+        // url : `${req.protocol}://${req.hostname}${req.originalUrl}`,
 
         ipDetails,
         sessionId
     }
     console.log(webSdkData)
-
 
     try {
         res.send({ sessionId,webSdkData });
