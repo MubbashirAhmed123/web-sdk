@@ -56,9 +56,9 @@ export async function collectUserDetails() {
 
         if (res.ok) {
             const result = await res.json();
+            console.log(result)
             serverResponse.innerHTML = `<p id='data'>Successfully fetch the data.... </br>${JSON.stringify(result.webSdkData)}</p>`
             loader.style.display='none'
-
             localStorage.setItem('sdk-data', JSON.stringify(result.webSdkData))
         } else {
             serverResponse.innerHTML = `<p>Some error occured.</p>`

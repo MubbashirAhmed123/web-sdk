@@ -6,12 +6,16 @@ export const getLocationFromGeolocation = async (coords) => {
         `https://us1.api-bdc.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
       );
       const data = await res.json();
-      console.log(data)
       return {
-        data
+        latitude,
+        longitude,
+        city: data.locality || null,
+        state: data.principalSubdivision || null,
+        countryName: data.countryName || null,
+        countryCode: data.countryCode || null,
       };
     } catch (err) {
-      alert('Some error ocurred while getting location details.')
+      console.log('getLocationFromGeolocation', err);
       return null;
     }
   };
