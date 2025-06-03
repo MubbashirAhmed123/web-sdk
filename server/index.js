@@ -78,7 +78,7 @@ fastify.post('/details', async (req, res) => {
         userAgent: ua.ua,
     });
 
-    
+
 
 
     const webSdkData = {

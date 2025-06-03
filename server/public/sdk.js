@@ -2,6 +2,7 @@ import { getBrowserInfo } from "./browser.js";
 import { detectPlatform, getDeviceType, madeInfo } from "./device.js";
 import { getIpDetails } from "./ip.js";
 import { getLocationFromGeolocation } from "./location.js";
+import { checkDevTool, detectIncognitoMode } from "./utils.js";
 
 const userid = document.getElementById('userid')
 const serverResponse = document.getElementById('serverResponse')
@@ -27,7 +28,6 @@ export async function collectUserDetails() {
         const browserInfo = getBrowserInfo();
         const madeDetails = madeInfo();
         // const ipDetails=await getIpDetails()
-        // console.log(ipDetails)
 
         const platform = detectPlatform();
 
@@ -43,6 +43,9 @@ export async function collectUserDetails() {
             // ipDetails
             locationDetails,
             madeDetails,
+            developerTools:checkDevTool(),
+            incognitoMode:await detectIncognitoMode()
+
             
         };
 
@@ -56,7 +59,6 @@ export async function collectUserDetails() {
 
         if (res.ok) {
             const result = await res.json();
-            console.log(result)
             serverResponse.innerHTML = `<p id='data'>Successfully fetch the data.... </br>${JSON.stringify({...result.webSdkData,url:window.location.href,
             })}</p>`
             loader.style.display='none'
@@ -114,9 +116,6 @@ export async function collectUserDetails() {
 //         const publicIP = await fetch("https://api.ipify.org?format=json")
 //           .then(res => res.json())
 //           .then(data => data.ip);
-  
-//         console.log("Public IP (via API):", publicIP);
-//         console.log("Leaked IPs (via WebRTC):", Array.from(leakedIPs));
   
 //         const isVPN = !leakedIPs.has(publicIP);
 //         vppn=isVPN
